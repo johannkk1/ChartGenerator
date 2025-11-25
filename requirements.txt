@@ -1,0 +1,7 @@
+flask
+pandas
+matplotlib
+mplfinance
+yfinance
+gunicorn
+requests

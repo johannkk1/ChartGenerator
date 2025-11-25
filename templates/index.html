@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chart Generator</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="icon" type="image/png"
+        href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P+/HgAFhAJ/wlseKgAAAABJRU5ErkJggg==">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="nav-bar" id="navBar">
+        <div class="nav-content">
+            <div class="nav-logo">Macro Charts</div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="main-container">
+
+        <!-- Header Section -->
+        <section class="section-header">
+            <h1 class="hero-headline">Design Your Insight.</h1>
+            <p class="hero-subheadline">Create professional financial charts in seconds.</p>
+        </section>
+
+        <!-- View: Chart Generator (Always Active) -->
+        <div id="view-generator" class="view-section active">
+            <form id="chartForm">
+                <!-- Section 1: Asset Selection -->
+                <section class="section-block" id="section-asset">
+                    <div class="section-title">
+                        <span class="step-number">01</span>
+                        <h2>Select Asset</h2>
+                    </div>
+                    <div class="asset-selection-container">
+                        <div class="search-input-wrapper">
+                            <input type="text" id="assetSearch" placeholder="Search stocks, crypto, indices..."
+                                autocomplete="off">
+                            <div class="search-suggestions" id="searchSuggestions"></div>
+                        </div>
+
+                        <!-- Multi-Select Toggle -->
+                        <div class="multi-select-wrapper">
+                            <label class="switch">
+                                <input type="checkbox" id="multiSelectToggle">
+                                <span class="slider-round"></span>
+                            </label>
+                            <span class="toggle-label">Multi-Select Mode</span>
+                        </div>
+
+                        <!-- Category Tabs -->
+                        <div class="category-tabs" id="categoryTabs">
+                            <button type="button" class="cat-tab active" data-category="All">All</button>
+                            <button type="button" class="cat-tab" data-category="Crypto">Crypto</button>
+                            <button type="button" class="cat-tab" data-category="Stocks">Stocks</button>
+                            <button type="button" class="cat-tab" data-category="Indices">Indices</button>
+                            <button type="button" class="cat-tab" data-category="Forex">Forex</button>
+                            <button type="button" class="cat-tab" data-category="Commodities">Commodities</button>
+                            <button type="button" class="cat-tab" data-category="Economic">Economic</button>
+                            <button type="button" class="cat-tab" data-category="On-Chain">On-Chain</button>
+                        </div>
+
+                        <div class="asset-grid-container">
+                            <div class="asset-grid" id="assetGrid">
+                                <!-- Assets injected by JS -->
+                            </div>
+                        </div>
+                        <input type="hidden" id="ticker" name="ticker" value="AAPL">
+                        <input type="hidden" id="compareTicker" name="compare_ticker" value="">
+                    </div>
+                </section>
+
+
+
+                <!-- Selected Assets Bar -->
+                <div id="selectedAssetsBar" class="selected-assets-bar hidden">
+                    <!-- Chips injected by JS -->
+                </div>
+
+                <!-- Section 2: Timeframe -->
+                <section class="section-block" id="section-timeframe">
+                    <div class="section-title">
+                        <span class="step-number">02</span>
+                        <h2>Timeframe</h2>
+                    </div>
+                    <div class="timeframe-container">
+                        <div class="toggle-group large" id="periodToggle">
+                            <button type="button" class="toggle-btn" data-value="1d">1D</button>
+                            <button type="button" class="toggle-btn" data-value="5d">5D</button>
+                            <button type="button" class="toggle-btn" data-value="1mo">1M</button>
+                            <button type="button" class="toggle-btn" data-value="3mo">3M</button>
+                            <button type="button" class="toggle-btn" data-value="6mo">6M</button>
+                            <button type="button" class="toggle-btn active" data-value="1y">1Y</button>
+                            <button type="button" class="toggle-btn" data-value="2y">2Y</button>
+                            <button type="button" class="toggle-btn" data-value="5y">5Y</button>
+                            <button type="button" class="toggle-btn" data-value="ytd">YTD</button>
+                            <button type="button" class="toggle-btn" data-value="max">Max</button>
+                            <button type="button" class="toggle-btn" data-value="custom">Custom</button>
+                        </div>
+
+                        <div id="customDateContainer" class="custom-date-wrapper hidden">
+                            <div class="date-input-group">
+                                <label>Start</label>
+                                <input type="date" id="startDate" class="date-input">
+                            </div>
+                            <div class="date-separator">to</div>
+                            <div class="date-input-group">
+                                <label>End</label>
+                                <input type="date" id="endDate" class="date-input">
+                            </div>
+                        </div>
+                        <input type="hidden" id="period" name="period" value="1y">
+                        <input type="hidden" id="interval" name="interval" value="1d">
+                    </div>
+                </section>
+
+                <!-- Section 3: Fine-Tuning -->
+                <section class="section-block" id="section-customize">
+                    <div class="section-title">
+                        <span class="step-number">03</span>
+                        <h2>Fine-Tuning</h2>
+                    </div>
+
+
+                    <!-- Currently Customizing Header -->
+                    <div class="customizing-header" id="customizingHeader">
+                        <span class="customizing-label">Customizing:</span>
+                        <span class="customizing-assets" id="customizingAssets">Select an asset to begin</span>
+                    </div>
+
+                    <!-- Per-Asset Customization Sections (dynamically generated) -->
+                    <div id="perAssetCustomization"></div>
+
+                    <!-- Global Settings -->
+                    <div class="global-settings-section">
+                        <h3 class="settings-section-title">Global Settings</h3>
+
+                        <div class="customization-grid">
+                            <!-- Theme -->
+                            <div class="control-card full-width-card">
+                                <label>Theme</label>
+                                <div class="theme-grid" id="themeControl">
+                                    <button type="button" class="theme-option active" data-value="standard">
+                                        <div class="theme-preview standard-preview">
+                                            <div class="preview-axis-y"></div>
+                                            <div class="preview-axis-x"></div>
+                                            <div class="preview-line"></div>
+                                        </div>
+                                        <span>Standard</span>
+                                    </button>
+                                    <button type="button" class="theme-option" data-value="minimalistic">
+                                        <div class="theme-preview minimal-preview">
+                                            <div class="preview-line"></div>
+                                        </div>
+                                        <span>Minimalistic</span>
+                                    </button>
+                                    <button type="button" class="theme-option" data-value="aesthetic">
+                                        <div class="theme-preview aesthetic-preview">
+                                            <div class="preview-axis-y"></div>
+                                            <div class="preview-axis-x"></div>
+                                            <div class="preview-line gradient-line"></div>
+                                        </div>
+                                        <span>Aesthetic</span>
+                                    </button>
+                                </div>
+                                <input type="hidden" id="style" name="style" value="standard">
+                            </div>
+
+                            <div class="control-card">
+                                <label>Grid Opacity</label>
+                                <input type="range" name="grid_opacity" min="0" max="100" value="10" class="slider">
+                            </div>
+
+                            <!-- Candle Outline -->
+                            <div class="control-card full-width-card">
+                                <label>Candle Outline</label>
+                                <div class="segmented-control" id="edgeStyleControl">
+                                    <button type="button" class="segment active" data-value="standard">Standard</button>
+                                    <button type="button" class="segment" data-value="custom">Custom</button>
+                                </div>
+                                <input type="hidden" id="edgeStyle" name="edge_style" value="standard">
+
+                                <div id="customEdgeColorContainer" class="color-picker-wrapper hidden"
+                                    style="margin-top: 12px;">
+                                    <label style="font-size: 12px; margin-bottom: 4px; display: block;">Edge
+                                        Color</label>
+                                    <input type="color" id="customEdgeColor" name="custom_edge_color" value="#000000"
+                                        class="color-input">
+                                </div>
+                            </div>
+
+                            <!-- Axes & Border -->
+                            <div class="control-card full-width-card">
+                                <label>Axes & Border</label>
+                                <div class="customization-grid" style="display: flex; flex-wrap: wrap; gap: 12px;">
+                                    <!-- X-Axis -->
+                                    <div class="axis-control-group" style="flex: 1; min-width: 120px;">
+                                        <div class="toggle-header">
+                                            <span>X-Axis</span>
+                                            <label class="toggle-switch">
+                                                <input type="checkbox" name="show_x_axis" checked>
+                                                <span class="slider round"></span>
+                                            </label>
+                                        </div>
+                                        <div class="color-picker-wrapper small">
+                                            <input type="color" name="x_axis_color" value="#000000" class="color-input">
+                                        </div>
+                                    </div>
+
+                                    <!-- Y-Axis -->
+                                    <div class="axis-control-group" style="flex: 1; min-width: 120px;">
+                                        <div class="toggle-header">
+                                            <span>Y-Axis</span>
+                                            <label class="toggle-switch">
+                                                <input type="checkbox" name="show_y_axis" checked>
+                                                <span class="slider round"></span>
+                                            </label>
+                                        </div>
+                                        <div class="color-picker-wrapper small">
+                                            <input type="color" name="y_axis_color" value="#000000" class="color-input">
+                                        </div>
+                                    </div>
+
+                                    <!-- Border -->
+                                    <div class="axis-control-group" style="flex: 1; min-width: 120px;">
+                                        <div class="toggle-header">
+                                            <span>Border</span>
+                                            <label class="toggle-switch">
+                                                <input type="checkbox" name="show_border" checked>
+                                                <span class="slider round"></span>
+                                            </label>
+                                        </div>
+                                        <div class="color-picker-wrapper small">
+                                            <input type="color" name="border_color" value="#CCCCCC" class="color-input">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Output Format -->
+                            <div class="control-card">
+                                <label>Output Format</label>
+                                <div class="segmented-control" id="formatControl">
+                                    <button type="button" class="segment active" data-value="png">PNG</button>
+                                    <button type="button" class="segment" data-value="jpg">JPG</button>
+                                    <button type="button" class="segment" data-value="pdf">PDF</button>
+                                    <button type="button" class="segment" data-value="svg">SVG</button>
+                                </div>
+                                <input type="hidden" id="outputFormat" name="output_format" value="png">
+                                <small style="display: block; margin-top: 8px; color: #666; font-size: 12px;">
+                                    SVG allows infinite zoom with ultra-sharp quality
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hidden inputs for per-asset settings -->
+                    <input type="hidden" id="perAssetSettings" name="per_asset_settings" value="">
+                </section>
+
+                <!-- Section 4: Background -->
+                <section class="section-block" id="section-background">
+                    <div class="section-title">
+                        <span class="step-number">04</span>
+                        <h2>Background</h2>
+                    </div>
+                    <div class="bg-color-grid">
+                        <button type="button" class="bg-option active" data-bg="transparent" title="Transparent">
+                            <div class="bg-preview transparent-bg"></div>
+                            <span>None</span>
+                        </button>
+                        <button type="button" class="bg-option" data-bg="#FFFFFF" title="White">
+                            <div class="bg-preview" style="background: #FFFFFF;"></div>
+                            <span>White</span>
+                        </button>
+                        <button type="button" class="bg-option" data-bg="#000000" title="Black">
+                            <div class="bg-preview" style="background: #000000;"></div>
+                            <span>Black</span>
+                        </button>
+                        <button type="button" class="bg-option" data-bg="#F5F5F7" title="Light Gray">
+                            <div class="bg-preview" style="background: #F5F5F7;"></div>
+                            <span>Gray</span>
+                        </button>
+                        <button type="button" class="bg-option" data-bg="#1C1C1E" title="Dark Gray">
+                            <div class="bg-preview" style="background: #1C1C1E;"></div>
+                            <span>Dark</span>
+                        </button>
+                        <button type="button" class="bg-option" data-bg="#000033" title="Navy">
+                            <div class="bg-preview" style="background: #000033;"></div>
+                            <span>Navy</span>
+                        </button>
+                    </div>
+                    <input type="hidden" id="bgColor" name="bg_color" value="transparent">
+
+
+                </section>
+
+                <!-- Section: Templates -->
+                <section class="section-block" id="section-templates">
+                    <div class="section-title">
+                        <span class="step-number">T</span>
+                        <h2>Templates</h2>
+                    </div>
+                    <div class="templates-container">
+                        <div class="template-actions">
+                            <input type="text" id="templateNameInput" placeholder="Template Name"
+                                class="template-input">
+                            <button type="button" id="saveTemplateBtn" class="btn-secondary">Save Current</button>
+                        </div>
+                        <div id="templatesList" class="templates-list">
+                            <!-- Templates injected by JS -->
+                            <div class="empty-state">No templates saved yet</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section 5: The Chart -->
+                <section class="section-block" id="section-chart">
+                    <div class="section-title">
+                        <span class="step-number">05</span>
+                        <h2>The Masterpiece</h2>
+                    </div>
+
+                    <div class="generate-wrapper">
+                        <button type="submit" class="btn-generate" id="generateBtn">
+                            <span class="btn-text">Generate Chart</span>
+                            <div class="btn-loading hidden">
+                                <div class="spinner"></div>
+                            </div>
+                        </button>
+                    </div>
+
+                    <div class="chart-display-container">
+                        <div class="chart-wrapper" id="chartWrapper">
+                            <div class="placeholder-content" id="placeholder">
+                                <div class="placeholder-icon">📊</div>
+                                <p>Your chart will appear here</p>
+                            </div>
+                            <img id="chartImage" class="chart-image hidden" alt="Generated Chart">
+                        </div>
+                        <div class="chart-actions hidden" id="chartActions">
+                            <div class="download-dropdown" style="margin-left: 0;">
+                                <button type="button" class="action-btn" id="genDownloadTrigger"
+                                    style="display: flex; align-items: center; gap: 8px;">
+                                    <span>Download</span>
+                                    <span style="font-size: 10px;">▼</span>
+                                </button>
+                                <div class="download-menu" id="genDownloadMenu"
+                                    style="bottom: 100%; top: auto; margin-bottom: 8px;">
+                                    <div class="download-item" onclick="downloadGeneratedChart('png')">
+                                        <span>🖼️</span> PNG (HD)
+                                    </div>
+                                    <div class="download-item" onclick="downloadGeneratedChart('jpg')">
+                                        <span>📷</span> JPG (Standard)
+                                    </div>
+                                    <div class="download-item" onclick="downloadGeneratedChart('svg')">
+                                        <span>♾️</span> SVG (Infinite Zoom)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </form>
+
+            <!-- Section: History -->
+            <section class="section-block" id="section-history">
+                <div class="section-title">
+                    <span class="step-number">H</span>
+                    <h2>History</h2>
+                </div>
+                <div id="historyList" class="history-list">
+                    <!-- History injected by JS -->
+                    <div class="empty-state">No history yet</div>
+                </div>
+            </section>
+
+            <!-- Section 6: Market Context -->
+            <section class="section-block" id="section-data">
+                <div class="section-title">
+                    <span class="step-number">06</span>
+                    <h2>Market Context</h2>
+                </div>
+                <div class="economic-ticker-container">
+                    <div class="economic-ticker" id="economicTicker">
+                        <!-- Economic data cards injected by JS -->
+                        <div class="loading-ticker">Loading market data...</div>
+                    </div>
+                </div>
+            </section>
+        </div> <!-- End view-generator -->
+
+    </main>
+
+    <script src="/static/script.js"></script>
+</body>
+
+</html>
