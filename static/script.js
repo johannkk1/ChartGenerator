@@ -786,7 +786,23 @@ bgColorButtons.forEach(btn => {
     btn.addEventListener('click', () => {
         bgColorButtons.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        bgColorInput.value = btn.dataset.bg;
+        const bg = btn.dataset.bg;
+        bgColorInput.value = bg;
+
+        // Smart Axis Colors: Auto-switch to white if background is dark
+        const darkBackgrounds = ['#000000', '#1C1C1E', '#000033'];
+        const isDark = darkBackgrounds.includes(bg);
+
+        const axisColor = isDark ? '#FFFFFF' : '#000000';
+        const borderColor = isDark ? '#FFFFFF' : '#CCCCCC';
+
+        const xAxisInput = document.querySelector('input[name="x_axis_color"]');
+        const yAxisInput = document.querySelector('input[name="y_axis_color"]');
+        const borderInput = document.querySelector('input[name="border_color"]');
+
+        if (xAxisInput) xAxisInput.value = axisColor;
+        if (yAxisInput) yAxisInput.value = axisColor;
+        if (borderInput) borderInput.value = borderColor;
     });
 });
 
