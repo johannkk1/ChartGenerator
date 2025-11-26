@@ -28,6 +28,7 @@ def generate_chart():
         primary_color = request.form.get('primary_color')
         bg_color = request.form.get('bg_color')
         grid_opacity = float(request.form.get('grid_opacity', 10)) / 100.0
+        print(f"DEBUG: grid_opacity processed in app.py: {grid_opacity}")
         
         # Comparison
         compare_ticker = request.form.get('compare_ticker')
