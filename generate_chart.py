@@ -53,6 +53,11 @@ def get_data(ticker, period, interval, start=None, end=None):
     # Invert the dictionary to check values (tickers)
     fred_tickers = list(FRED_SERIES.values())
     
+    # Check if ticker is a key in FRED_SERIES (e.g. 'ism_services') and map to ID
+    if ticker in FRED_SERIES:
+        print(f"DEBUG: Mapping {ticker} to FRED ID {FRED_SERIES[ticker]}")
+        ticker = FRED_SERIES[ticker]
+    
     if ticker in fred_tickers:
         print(f"DEBUG: Detected economic ticker {ticker}")
         try:
