@@ -328,6 +328,34 @@ def create_notice_image(text, width=1920, height=1080, style_name="default", out
     
     return buf
 
+def apply_date_offset(df, value, unit):
+    """
+    Applies a time offset to the DataFrame index.
+    value: Number of units to offset (can be negative)
+    unit: 'days', 'weeks', 'months', 'years'
+    """
+    if not value or value == 0:
+        return df
+    
+    try:
+        if unit == 'days':
+            offset = pd.DateOffset(days=value)
+        elif unit == 'weeks':
+            offset = pd.DateOffset(weeks=value)
+        elif unit == 'months':
+            offset = pd.DateOffset(months=value)
+        elif unit == 'years':
+            offset = pd.DateOffset(years=value)
+        else:
+            return df
+            
+        print(f"Applying offset: {value} {unit}")
+        df.index = df.index + offset
+        return df
+    except Exception as e:
+        print(f"Error applying offset: {e}")
+        return df
+
 def generate_chart_buffer(ticker, period="1y", interval="1d", start=None, end=None, 
                           resolution="1080p", style="default", title=None, chart_type="line", compare_ticker=None,
                           primary_color=None, compare_color=None, compare_type="line", bg_color=None,
@@ -351,6 +379,10 @@ def generate_chart_buffer(ticker, period="1y", interval="1d", start=None, end=No
         # Use candleInterval if available and type is candle-like, otherwise use global interval
         if chart_type in ['candle', 'ohlc', 'hollow_and_filled']:
             interval = primary_settings.get('candleInterval', interval)
+            
+        # Extract Offset
+        offset_value = primary_settings.get('offsetValue', 0)
+        offset_unit = primary_settings.get('offsetUnit', 'weeks')
     
     print(f"Generating chart for {ticker} with interval {interval}, type {chart_type}, up={up_color}, down={down_color}")
 
@@ -365,6 +397,10 @@ def generate_chart_buffer(ticker, period="1y", interval="1d", start=None, end=No
         return create_notice_image(f"Error: {str(e)}", style_name=style)
 
     # Apply Scale to Primary Data
+    # First apply offset if any
+    if primary_settings:
+        df = apply_date_offset(df, offset_value, offset_unit)
+
     primary_scale = primary_settings.get('scale', 'linear')
     if primary_scale == 'percentage':
         # Normalize to percentage change from start
@@ -417,12 +453,17 @@ def generate_chart_buffer(ticker, period="1y", interval="1d", start=None, end=No
                 comp_interval = comp_settings.get('candleInterval', interval) # Default to primary interval
                 comp_scale = comp_settings.get('scale', 'linear')
                 comp_price_axis = comp_settings.get('priceAxis', 'right') # Default opposite to typical primary
+                comp_offset_value = comp_settings.get('offsetValue', 0)
+                comp_offset_unit = comp_settings.get('offsetUnit', 'weeks')
                 
                 # Fetch Data
                 print(f"Fetching overlay {comp_ticker} with interval {comp_interval}")
                 comp_df = get_data(comp_ticker, period, comp_interval, start, end)
                 
                 if not comp_df.empty:
+                    # Apply Offset BEFORE reindexing
+                    comp_df = apply_date_offset(comp_df, comp_offset_value, comp_offset_unit)
+
                     # Align index
                     comp_df = comp_df.reindex(df.index, method='nearest')
                     

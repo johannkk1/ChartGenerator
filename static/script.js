@@ -147,7 +147,10 @@ function getDefaultSettings(ticker, isPrimary) {
         scale: 'linear', // linear, log, percentage
         priceAxis: 'left',
         timeAxis: 'bottom',
-        candleInterval: '1wk' // For candle charts: 1m, 5m, 15m, 1h, 4h, 1d, 1wk, 1mo
+        timeAxis: 'bottom',
+        candleInterval: '1wk', // For candle charts: 1m, 5m, 15m, 1h, 4h, 1d, 1wk, 1mo
+        offsetValue: 0,
+        offsetUnit: 'weeks'
     };
 }
 
@@ -380,6 +383,20 @@ function renderCustomizationSections() {
                             <button type="button" class="segment ${settings.timeAxis === 'top' ? 'active' : ''}" data-value="top">Top</button>
                         </div>
                     </div>
+
+                    <!-- Time Offset -->
+                    <div class="control-card">
+                        <label>Time Offset</label>
+                        <div class="offset-control-wrapper" style="display: flex; gap: 8px;">
+                            <input type="number" class="asset-offset-value" data-ticker="${ticker}" value="${settings.offsetValue || 0}" style="width: 60px; padding: 4px; border-radius: 4px; border: 1px solid #333; background: #222; color: #fff;">
+                            <select class="asset-offset-unit" data-ticker="${ticker}" style="flex: 1; padding: 4px; border-radius: 4px; border: 1px solid #333; background: #222; color: #fff;">
+                                <option value="days" ${settings.offsetUnit === 'days' ? 'selected' : ''}>Days</option>
+                                <option value="weeks" ${settings.offsetUnit === 'weeks' ? 'selected' : ''}>Weeks</option>
+                                <option value="months" ${settings.offsetUnit === 'months' ? 'selected' : ''}>Months</option>
+                                <option value="years" ${settings.offsetUnit === 'years' ? 'selected' : ''}>Years</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -494,6 +511,24 @@ function attachCustomizationListeners() {
                 assetSettings[ticker].timeAxis = e.target.dataset.value;
                 updatePerAssetSettingsInput();
             }
+        });
+    });
+
+    // Offset Value listeners
+    document.querySelectorAll('.asset-offset-value').forEach(input => {
+        const ticker = input.dataset.ticker;
+        input.addEventListener('input', (e) => {
+            assetSettings[ticker].offsetValue = parseInt(e.target.value) || 0;
+            updatePerAssetSettingsInput();
+        });
+    });
+
+    // Offset Unit listeners
+    document.querySelectorAll('.asset-offset-unit').forEach(select => {
+        const ticker = select.dataset.ticker;
+        select.addEventListener('change', (e) => {
+            assetSettings[ticker].offsetUnit = e.target.value;
+            updatePerAssetSettingsInput();
         });
     });
 }
