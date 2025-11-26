@@ -453,7 +453,9 @@ def generate_chart_buffer(ticker, period="1y", interval="1d", start=None, end=No
                 comp_color = comp_settings.get('color', overlay_colors[i % len(overlay_colors)])
                 comp_interval = comp_settings.get('candleInterval', interval) # Default to primary interval
                 comp_scale = comp_settings.get('scale', 'linear')
-                comp_price_axis = comp_settings.get('priceAxis', 'right') # Default opposite to typical primary
+                primary_axis = primary_settings.get('priceAxis', 'left')
+                default_comp_axis = 'right' if primary_axis == 'left' else 'left'
+                comp_price_axis = comp_settings.get('priceAxis', default_comp_axis)
                 comp_offset_value = comp_settings.get('offsetValue', 0)
                 comp_offset_unit = comp_settings.get('offsetUnit', 'weeks')
                 
@@ -465,8 +467,13 @@ def generate_chart_buffer(ticker, period="1y", interval="1d", start=None, end=No
                     # Apply Offset BEFORE reindexing
                     comp_df = apply_date_offset(comp_df, comp_offset_value, comp_offset_unit)
 
-                    # Align index
-                    comp_df = comp_df.reindex(df.index, method='nearest')
+                    # Align index using interpolation for smoother lines
+                    # First reindex to union of indices to preserve data points
+                    combined_index = df.index.union(comp_df.index).sort_values()
+                    comp_df = comp_df.reindex(combined_index)
+                    comp_df = comp_df.interpolate(method='time')
+                    # Then reindex back to primary df index
+                    comp_df = comp_df.reindex(df.index)
                     
                     # Apply Scale
                     if comp_scale == 'percentage':
