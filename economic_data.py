@@ -13,7 +13,7 @@ _cache = {}
 _cache_ttl = 300  # 5 minutes
 
 # API Keys (optional, some APIs work without keys)
-FRED_API_KEY = os.getenv('FRED_API_KEY', '')  # Get free key from https://fred.stlouisfed.org/docs/api/api_key.html
+FRED_API_KEY = os.getenv('FRED_API_KEY', '37919a51d3ce8074d518c09a39f71552')  # Get free key from https://fred.stlouisfed.org/docs/api/api_key.html
 API_NINJAS_KEY = os.getenv('API_NINJAS_KEY', 'qX2i8bDzHVnKgKtKVgUBcg==3gRk5J9qVjDFvK8U')  # User provided key
 
 # FRED Series IDs for economic indicators
