@@ -6,3 +6,4 @@ yfinance
 gunicorn
 requests
 feedparser
+lxml
