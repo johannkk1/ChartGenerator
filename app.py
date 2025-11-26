@@ -9,9 +9,15 @@ from economic_data import get_economic_data
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev_key_for_charts')
 
+VERSION = "1.0.5-fix-alpha"
+
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', version=VERSION)
+
+@app.route('/version')
+def version():
+    return jsonify({'version': VERSION})
 
 @app.route('/generate', methods=['POST'])
 def generate_chart():
