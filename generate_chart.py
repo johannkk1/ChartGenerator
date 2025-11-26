@@ -486,7 +486,14 @@ def generate_chart_buffer(ticker, period="1y", interval="1d", start=None, end=No
                     is_secondary = (comp_price_axis == 'right')
                     
                     print(f"Adding overlay {comp_ticker}: color={comp_color}, type={comp_type}, axis={comp_price_axis}")
-                    ap = mpf.make_addplot(comp_df['Close'], color=comp_color, width=1.5, secondary_y=is_secondary, type=comp_type)
+                    
+                    # For candle-like charts, we must pass the full DataFrame. For line/scatter, just the Series.
+                    if comp_type in ['candle', 'ohlc', 'hollow_and_filled']:
+                        addplot_data = comp_df
+                    else:
+                        addplot_data = comp_df['Close']
+                        
+                    ap = mpf.make_addplot(addplot_data, color=comp_color, width=1.5, secondary_y=is_secondary, type=comp_type)
                     addplot.append(ap)
                     legend_items.append((comp_ticker, comp_color))
                     

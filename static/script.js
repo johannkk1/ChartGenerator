@@ -387,8 +387,12 @@ function renderCustomizationSections() {
                     <!-- Time Offset -->
                     <div class="control-card">
                         <label>Time Offset</label>
-                        <div class="offset-control-wrapper" style="display: flex; gap: 8px;">
-                            <input type="number" class="asset-offset-value" data-ticker="${ticker}" value="${settings.offsetValue || 0}" style="width: 60px; padding: 4px; border-radius: 4px; border: 1px solid #333; background: #222; color: #fff;">
+                        <div class="offset-control-wrapper" style="display: flex; gap: 8px; align-items: center;">
+                            <select class="asset-offset-direction" data-ticker="${ticker}" style="padding: 4px; border-radius: 4px; border: 1px solid #333; background: #222; color: #fff;">
+                                <option value="1" ${settings.offsetValue >= 0 ? 'selected' : ''}>Forward (+)</option>
+                                <option value="-1" ${settings.offsetValue < 0 ? 'selected' : ''}>Backward (-)</option>
+                            </select>
+                            <input type="number" class="asset-offset-value" data-ticker="${ticker}" value="${Math.abs(settings.offsetValue || 0)}" min="0" style="width: 60px; padding: 4px; border-radius: 4px; border: 1px solid #333; background: #222; color: #fff;">
                             <select class="asset-offset-unit" data-ticker="${ticker}" style="flex: 1; padding: 4px; border-radius: 4px; border: 1px solid #333; background: #222; color: #fff;">
                                 <option value="days" ${settings.offsetUnit === 'days' ? 'selected' : ''}>Days</option>
                                 <option value="weeks" ${settings.offsetUnit === 'weeks' ? 'selected' : ''}>Weeks</option>
@@ -518,7 +522,22 @@ function attachCustomizationListeners() {
     document.querySelectorAll('.asset-offset-value').forEach(input => {
         const ticker = input.dataset.ticker;
         input.addEventListener('input', (e) => {
-            assetSettings[ticker].offsetValue = parseInt(e.target.value) || 0;
+            const container = input.closest('.offset-control-wrapper');
+            const direction = parseInt(container.querySelector('.asset-offset-direction').value);
+            const val = Math.abs(parseInt(e.target.value) || 0);
+            assetSettings[ticker].offsetValue = val * direction;
+            updatePerAssetSettingsInput();
+        });
+    });
+
+    // Offset Direction listeners
+    document.querySelectorAll('.asset-offset-direction').forEach(select => {
+        const ticker = select.dataset.ticker;
+        select.addEventListener('change', (e) => {
+            const container = select.closest('.offset-control-wrapper');
+            const val = Math.abs(parseInt(container.querySelector('.asset-offset-value').value) || 0);
+            const direction = parseInt(e.target.value);
+            assetSettings[ticker].offsetValue = val * direction;
             updatePerAssetSettingsInput();
         });
     });
@@ -1075,73 +1094,7 @@ chartForm.addEventListener('submit', async (e) => {
 });
 
 // --- Economic Data (Horizontal Ticker) ---
-async function fetchEconomicData() {
-    try {
-        const response = await fetch('/economic-data');
-        const data = await response.json();
-        renderEconomicTicker(data);
-    } catch (error) {
-        console.error('Failed to fetch economic data:', error);
-    }
-}
 
-function renderEconomicTicker(data) {
-    const tickerContainer = document.getElementById('economicTicker');
-    if (!tickerContainer) return;
-
-    tickerContainer.innerHTML = '';
-
-    // Define indicators to show
-    const indicators = [
-        data.interest_rate,
-        data.treasury_10y,
-        data.cpi,
-        data.unemployment,
-        data.dxy,
-        data.pmi,
-        data.ism_services,
-        data.wilshire_5000,
-        data.tga
-    ];
-
-    indicators.forEach((indicator, index) => {
-        if (!indicator) return;
-
-        const card = document.createElement('div');
-        card.className = 'economic-card';
-
-        // Determine change class
-        let changeClass = 'eco-change';
-        let changeIcon = '';
-        if (indicator.change_pct > 0) {
-            changeClass += ' positive';
-            changeIcon = '↑';
-        } else if (indicator.change_pct < 0) {
-            changeClass += ' negative';
-            changeIcon = '↓';
-        }
-
-        card.innerHTML = `
-            <div class="eco-header">
-                <span class="eco-name">${indicator.name}</span>
-            </div>
-            <div class="eco-value">${indicator.value}</div>
-            <div class="${changeClass}">
-                ${changeIcon} ${Math.abs(indicator.change_pct).toFixed(2)}%
-            </div>
-        `;
-
-        tickerContainer.appendChild(card);
-    });
-
-    // Clone for infinite scroll
-    const clone = tickerContainer.cloneNode(true);
-    // Actually, CSS animation handles the scroll, but we need enough content.
-    // If content is short, duplicate it.
-}
-
-// Initialize Economic Data
-fetchEconomicData();
 
 // --- Download Logic ---
 window.downloadGeneratedChart = function (format) {

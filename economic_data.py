@@ -30,7 +30,8 @@ FRED_SERIES = {
     'gold_price': 'GOLDAMGBD228NLBM',
     'oil_wti': 'DCOILWTICO',
     'wilshire_5000': 'WTREGEN',
-    'treasury_general_account': 'WDTGAL'
+    'treasury_general_account': 'WDTGAL',
+    'ism_services': 'NMF'  # Non-Manufacturing Business Activity Index
 }
 
 def _get_cached_or_fetch(key, fetch_func, ttl=300):
