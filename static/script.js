@@ -145,7 +145,7 @@ function getDefaultSettings(ticker, isPrimary) {
         upColor: '#10B981',   // Green for bullish candles
         downColor: '#EF4444', // Red for bearish candles
         scale: 'linear', // linear, log, percentage
-        priceAxis: 'left',
+        priceAxis: isPrimary ? 'left' : 'right',
         timeAxis: 'bottom',
         timeAxis: 'bottom',
         candleInterval: '1wk', // For candle charts: 1m, 5m, 15m, 1h, 4h, 1d, 1wk, 1mo

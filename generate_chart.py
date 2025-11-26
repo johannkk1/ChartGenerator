@@ -500,12 +500,27 @@ def generate_chart_buffer(ticker, period="1y", interval="1d", start=None, end=No
                     print(f"Adding overlay {comp_ticker}: color={comp_color}, type={comp_type}, axis={comp_price_axis}")
                     
                     # For candle-like charts, we must pass the full DataFrame. For line/scatter, just the Series.
+                    addplot_kwargs = {
+                        'color': comp_color,
+                        'width': 1.5,
+                        'secondary_y': is_secondary,
+                        'type': comp_type
+                    }
+                    
                     if comp_type in ['candle', 'ohlc', 'hollow_and_filled']:
                         addplot_data = comp_df
+                        # Custom color logic for overlay candles
+                        c_up = comp_settings.get('upColor')
+                        c_down = comp_settings.get('downColor')
+                        if c_up and c_down:
+                            # Generate a list of colors for each candle
+                            # This works for 'candle' type in make_addplot by passing color=list
+                            colors = [c_up if close >= open else c_down for open, close in zip(comp_df['Open'], comp_df['Close'])]
+                            addplot_kwargs['color'] = colors
                     else:
                         addplot_data = comp_df['Close']
                         
-                    ap = mpf.make_addplot(addplot_data, color=comp_color, width=1.5, secondary_y=is_secondary, type=comp_type)
+                    ap = mpf.make_addplot(addplot_data, **addplot_kwargs)
                     addplot.append(ap)
                     legend_items.append((comp_ticker, comp_color))
                     
