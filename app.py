@@ -27,7 +27,7 @@ def generate_chart():
         title = request.form.get('title')
         primary_color = request.form.get('primary_color')
         bg_color = request.form.get('bg_color')
-        grid_opacity = float(request.form.get('grid_opacity', 0.1))
+        grid_opacity = float(request.form.get('grid_opacity', 10)) / 100.0
         
         # Comparison
         compare_ticker = request.form.get('compare_ticker')

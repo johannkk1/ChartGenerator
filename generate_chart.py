@@ -237,6 +237,7 @@ def get_chart_style(style_name="classic", custom_color=None, up_color=None, down
         base_grid = "#E5E5E7"
         
     # If grid_opacity is 0, disable grid entirely
+    grid_opacity = max(0.0, min(1.0, float(grid_opacity)))
     if grid_opacity <= 0:
         grid_color = "none"
         gridstyle = ""
